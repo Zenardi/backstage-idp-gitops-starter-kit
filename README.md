@@ -270,8 +270,8 @@ Exit the container and replace AUTH_GITHUB_CLIENT_ID and AUTH_GITHUB_CLIENT_SECR
 
 ```bash
 docker run --rm \
--e AUTH_GITHUB_CLIENT_ID=Ov23lijEiQPGog0Aw6pb \
--e AUTH_GITHUB_CLIENT_SECRET=d4bf5791e3aa64eec3f5236b2db834c9cd7c15ae \
+-e AUTH_GITHUB_CLIENT_ID=$AUTH_GITHUB_CLIENT_ID \
+-e AUTH_GITHUB_CLIENT_SECRET=$AUTH_GITHUB_CLIENT_SECRET \
 -p 3000:3000 -p 7007:7007 -ti \
 -v /home/developer/develop/backstage-idp-master-course/backstage-app:/app \
 -w /app node:24-bookworm-slim bash

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: python-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Zenardi/python-app.git
+    targetRevision: HEAD
+    path: charts/python-app
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: python
+  syncPolicy:
+    automated:
+      prune: true

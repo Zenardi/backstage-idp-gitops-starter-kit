@@ -1,0 +1,43 @@
+# 1. Aplicação Dummy
+kind: Pod
+apiVersion: v1
+metadata:
+  name: site-pod
+  labels:
+    app: site
+spec:
+  containers:
+  - name: site-container
+    image: hashicorp/http-echo
+    args:
+    - "-text=TRAEFIK NO WSL FUNCIONANDO!"
+---
+# 2. Service
+kind: Service
+apiVersion: v1
+metadata:
+  name: site-svc
+spec:
+  selector:
+    app: site
+  ports:
+  - port: 5678
+---
+# 3. O Ingress (Simples e direto)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: site-ingress
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: exampleapp.local  # Lembre do seu /etc/hosts apontando para 127.0.0.1
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: site-svc
+            port:
+              number: 5678

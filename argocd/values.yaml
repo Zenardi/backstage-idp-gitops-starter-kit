@@ -1,0 +1,38 @@
+redis-ha:
+  enabled: false
+
+global:
+  domain: argocd.local
+
+configs:
+  params:
+    server.insecure: true
+
+server:
+  replicas: 1
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    tls: false
+    hostname: argocd.local
+    https: false
+
+repoServer:
+  replicas: 1
+  livenessProbe:
+    initialDelaySeconds: 60  # Espera 1 min antes de checar a primeira vez
+    periodSeconds: 10
+    timeoutSeconds: 30       # Dá 30s para o pod responder
+    failureThreshold: 5
+
+  readinessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 30
+    failureThreshold: 5
+
+applicationSet:
+  replicas: 1
+
+controller:
+  replicas: 1

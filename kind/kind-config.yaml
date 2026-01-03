@@ -1,0 +1,15 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: backstage
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 30080  # Traefik will listen here (HTTP)
+    hostPort: 80          # Accessible via Windows localhost:80
+    protocol: TCP
+  - containerPort: 30443  # Traefik will listen here (HTTPS)
+    hostPort: 443         # Accessible via Windows localhost:443
+    protocol: TCP
+
+# kind create cluster --config kind.yaml
+# kind delete cluster --name backstage

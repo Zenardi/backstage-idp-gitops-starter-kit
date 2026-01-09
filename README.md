@@ -639,3 +639,17 @@ As the number of CRDs grow on a control plane it increases the amount of queries
 Set the environment variable ARGOCD_K8S_CLIENT_QPS to 300 for improved compatibility with multiple CRDs.
 
 The default value of ARGOCD_K8S_CLIENT_QPS is 50, modifying the value also updates ARGOCD_K8S_CLIENT_BURST as it is default to ARGOCD_K8S_CLIENT_QPS x 2.
+
+
+# Monitoring: Prometheus and Grafana
+Install Prometheus and Grafana stack with a single Helm Chart.
+```sh
+# Add the official community repo
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Install the modern version (this will handle CRDs correctly)
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --version 80.13.2 \
+--create-namespace --namespace kube-prometheus \
+-f kube-prometheus/values.yaml
+``` 

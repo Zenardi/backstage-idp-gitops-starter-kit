@@ -21,6 +21,7 @@
   - [Set health status](#set-health-status)
   - [Set resource exclusion](#set-resource-exclusion)
   - [Increase Kubernetes client QPS](#increase-kubernetes-client-qps)
+- [Monitoring: Prometheus and Grafana](#monitoring-prometheus-and-grafana)
 
 
 # Setup local environment for backstage IDP development

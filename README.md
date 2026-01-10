@@ -22,6 +22,7 @@
   - [Set resource exclusion](#set-resource-exclusion)
   - [Increase Kubernetes client QPS](#increase-kubernetes-client-qps)
 - [Monitoring: Prometheus and Grafana](#monitoring-prometheus-and-grafana)
+  - [Install Prometheus and Grafana separately](#install-prometheus-and-grafana-separately)
 
 
 # Setup local environment for backstage IDP development
@@ -643,6 +644,10 @@ The default value of ARGOCD_K8S_CLIENT_QPS is 50, modifying the value also updat
 
 
 # Monitoring: Prometheus and Grafana
+> [!TIP]
+> For production scenarios you can use kube-prometheus-stack. For dev environments, install prometheus and grafana separately (see next section).
+
+
 Install Prometheus and Grafana stack with a single Helm Chart.
 ```sh
 # Add the official community repo
@@ -653,4 +658,31 @@ helm repo update
 helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --version 80.13.2 \
 --create-namespace --namespace kube-prometheus \
 -f kube-prometheus/values.yaml
+
+# Update Chart
+# Install the modern version (this will handle CRDs correctly)
+helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+--namespace kube-prometheus \
+-f kube-prometheus/values.yaml
 ``` 
+
+## Install Prometheus and Grafana separately
+```sh
+# Install Prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install prometheus prometheus-community/prometheus --version 28.3.0 \
+--create-namespace --namespace monitoring \
+-f monitoring/prometheus/values.yaml
+
+
+# Install Grafana
+helm install grafana grafana/grafana --version 10.5.5 \
+--create-namespace --namespace monitoring \
+-f monitoring/grafana/values.yaml
+
+# Upgrade chart
+helm upgrade grafana grafana/grafana \
+--namespace monitoring \
+-f monitoring/grafana/values.yaml
+```

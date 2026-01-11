@@ -6,4 +6,5 @@ spec:
   replicas: 1
   template:
     spec:
-      repository: Zenardi/python-app
+      serviceAccountName: github-runner-sa
+      repository: Zenardi/spring-grpc

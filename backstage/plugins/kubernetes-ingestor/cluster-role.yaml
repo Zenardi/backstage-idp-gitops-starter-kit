@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backstage-kubernetes-ingestor
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backstage-kubernetes-ingestor
+subjects:
+  - kind: ServiceAccount
+    name: backstage-kubernetes-ingestor
+    namespace: backstage
+roleRef:
+  kind: ClusterRole
+  name: backstage-kubernetes-ingestor
+  apiGroup: rbac.authorization.k8s.io

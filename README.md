@@ -23,6 +23,7 @@
   - [Increase Kubernetes client QPS](#increase-kubernetes-client-qps)
 - [Monitoring: Prometheus and Grafana](#monitoring-prometheus-and-grafana)
   - [Install Prometheus and Grafana separately](#install-prometheus-and-grafana-separately)
+- [Install Metric Server](#install-metric-server)
 
 
 # Setup local environment for backstage IDP development
@@ -685,4 +686,17 @@ helm install grafana grafana/grafana --version 10.5.5 \
 helm upgrade grafana grafana/grafana \
 --namespace monitoring \
 -f monitoring/grafana/values.yaml
+```
+
+# Install Metric Server
+Install metric server so HPA could catch metrics.
+```sh
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+
+helm install metrics-server metrics-server/metrics-server --version 3.13.0 \
+-f metrics-server/values.yaml \
+-n kube-system
+
+# OR
+kubectl apply -f metrics-server/components.yaml
 ```

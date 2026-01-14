@@ -36,3 +36,11 @@ applicationSet:
 
 controller:
   replicas: 1
+
+# providers:
+#   kubernetesingress:
+#     ingressendpoint:
+#       publishedservice: traefik/traefik
+
+additionalArguments:
+ - --providers.kubernetesingress.ingressendpoint.publishedservice=traefik/traefik

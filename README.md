@@ -23,6 +23,8 @@
   - [Increase Kubernetes client QPS](#increase-kubernetes-client-qps)
 - [Monitoring: Prometheus and Grafana](#monitoring-prometheus-and-grafana)
   - [Install Prometheus and Grafana separately](#install-prometheus-and-grafana-separately)
+    - [Installing Prometheus Operator](#installing-prometheus-operator)
+    - [Install Grafana](#install-grafana)
 - [Install Metric Server](#install-metric-server)
 
 
@@ -668,15 +670,36 @@ helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
 ``` 
 
 ## Install Prometheus and Grafana separately
+
+### Installing Prometheus Operator
+
+1. Install Operator Lifecycle Manager (OLM), a tool to help manage the Operators running on your cluster.
+
+    ```sh
+    curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.38.0/install.sh | bash -s v0.38.0
+    ```
+
+2. Install the operator by running the following command:
+    ```sh
+    kubectl create -f https://operatorhub.io/install/prometheus.yaml
+
+
+    kubectl create -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/master/bundle.yaml
+    ```
+    > [!NOTE] This Operator will be installed in the "operators" namespace and will be usable from all namespaces in the cluster.
+
+
+3. After install, watch your operator come up using next command.
+    ```sh
+    kubectl get csv -n operators
+    ```
+4. Apply Prometheus definiton
+    ```sh
+    kubectl apply -f monitoring/prometheus-operator/prometheus.yaml
+    ```
+
+### Install Grafana
 ```sh
-# Install Prometheus
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-helm install prometheus prometheus-community/prometheus --version 28.3.0 \
---create-namespace --namespace monitoring \
--f monitoring/prometheus/values.yaml
-
-
 # Install Grafana
 helm install grafana grafana/grafana --version 10.5.5 \
 --create-namespace --namespace monitoring \

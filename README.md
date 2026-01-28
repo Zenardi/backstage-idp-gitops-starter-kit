@@ -1,3 +1,6 @@
+<details>
+<summary class="summary">Table of Contents</summary>
+
 - [Setup local environment for backstage IDP development](#setup-local-environment-for-backstage-idp-development)
 - [Key Components:](#key-components)
 - [Purpose and Workflow:](#purpose-and-workflow)
@@ -22,10 +25,13 @@
   - [Set resource exclusion](#set-resource-exclusion)
   - [Increase Kubernetes client QPS](#increase-kubernetes-client-qps)
 - [Monitoring: Prometheus and Grafana](#monitoring-prometheus-and-grafana)
-  - [Install Prometheus and Grafana separately](#install-prometheus-and-grafana-separately)
-    - [Installing Prometheus Operator](#installing-prometheus-operator)
-    - [Install Grafana](#install-grafana)
+  - [Installing Prometheus Operator](#installing-prometheus-operator)
+  - [Install Grafana](#install-grafana)
 - [Install Metric Server](#install-metric-server)
+  
+</details>
+
+
 
 
 # Setup local environment for backstage IDP development
@@ -647,58 +653,51 @@ The default value of ARGOCD_K8S_CLIENT_QPS is 50, modifying the value also updat
 
 
 # Monitoring: Prometheus and Grafana
-> [!TIP]
-> For production scenarios you can use kube-prometheus-stack. For dev environments, install prometheus and grafana separately (see next section).
 
+## Installing Prometheus Operator
+Using **kube-prometheus method**, install Prometheus operator.
 
-Install Prometheus and Grafana stack with a single Helm Chart.
+* Documentation: [install-using-kube-prometheus](https://prometheus-operator.dev/docs/getting-started/installation/#install-using-kube-prometheus)
+
+The easiest way of starting with the Prometheus Operator is by deploying it as part of kube-prometheus. kube-prometheus deploys the Prometheus Operator and already schedules a Prometheus called prometheus-k8s with alerts and rules by default.
+
+We are going to deploy a compiled version of the Kubernetes manifests.
+
+You can either clone the kube-prometheus from GitHub:
 ```sh
-# Add the official community repo
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+git clone https://github.com/prometheus-operator/kube-prometheus.git
+```
 
-# Install the modern version (this will handle CRDs correctly)
-helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --version 80.13.2 \
---create-namespace --namespace kube-prometheus \
--f kube-prometheus/values.yaml
+or download the current main branch as zip file and extract its contents:
 
-# Update Chart
-# Install the modern version (this will handle CRDs correctly)
-helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
---namespace kube-prometheus \
--f kube-prometheus/values.yaml
-``` 
+[github.com/prometheus-operator/kube-prometheus/archive/main.zip](github.com/prometheus-operator/kube-prometheus/archive/main.zip)
 
-## Install Prometheus and Grafana separately
+Once you have the files on your machine change into the project’s root directory and run the following commands:
 
-### Installing Prometheus Operator
+```sh
+# Create the namespace and CRDs, and then wait for them to be available before creating the remaining resources
+kubectl create -f manifests/setup
 
-1. Install Operator Lifecycle Manager (OLM), a tool to help manage the Operators running on your cluster.
+# Wait until the "servicemonitors" CRD is created. The message "No resources found" means success in this context.
+until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
 
-    ```sh
-    curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.38.0/install.sh | bash -s v0.38.0
-    ```
+kubectl create -f manifests/
+```
 
-2. Install the operator by running the following command:
-    ```sh
-    kubectl create -f https://operatorhub.io/install/prometheus.yaml
+We create the namespace and CustomResourceDefinitions first to avoid race conditions when deploying the monitoring components. Alternatively, the resources in both folders can be applied with a single command:
 
+```sh
+kubectl create -f manifests/setup -f manifests
+```
 
-    kubectl create -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/master/bundle.yaml
-    ```
-    > [!NOTE] This Operator will be installed in the "operators" namespace and will be usable from all namespaces in the cluster.
+But it may be necessary to run the command multiple times for all components to be created successfully.
+
+> [!note] Note: For versions before Kubernetes v1.20.z refer to the Kubernetes compatibility matrix in order to choose a compatible branch.
+
+> [!note] Note: If you used Kube-Prometheus as the installation method, we would recommend you to follow this page to learn how to access the resources provided.
 
 
-3. After install, watch your operator come up using next command.
-    ```sh
-    kubectl get csv -n operators
-    ```
-4. Apply Prometheus definiton
-    ```sh
-    kubectl apply -f monitoring/prometheus-operator/prometheus.yaml
-    ```
-
-### Install Grafana
+## Install Grafana
 ```sh
 # Install Grafana
 helm install grafana grafana/grafana --version 10.5.5 \
@@ -712,7 +711,9 @@ helm upgrade grafana grafana/grafana \
 ```
 
 # Install Metric Server
+
 Install metric server so HPA could catch metrics.
+
 ```sh
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 

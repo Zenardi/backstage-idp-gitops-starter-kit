@@ -98,6 +98,9 @@ helm install traefik traefik/traefik \
   --set ports.web.nodePort=30080 \
   --set ports.websecure.nodePort=30443
 
+
+# To Upgrade
+helm upgrade traefik traefik/traefik -f traefik/values.yaml -n traefik 
 ```
 
 ### 3. Deploying a Sample Application

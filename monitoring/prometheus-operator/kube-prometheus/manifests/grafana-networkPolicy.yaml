@@ -19,6 +19,15 @@ spec:
     ports:
     - port: 3000
       protocol: TCP
+  - from:
+    # Allow traffic from Traefik Ingress Controller (any namespace)
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: traefik
+    ports:
+    - port: 3000
+      protocol: TCP
   podSelector:
     matchLabels:
       app.kubernetes.io/component: grafana

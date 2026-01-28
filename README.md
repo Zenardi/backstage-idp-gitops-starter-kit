@@ -26,7 +26,6 @@
   - [Increase Kubernetes client QPS](#increase-kubernetes-client-qps)
 - [Monitoring: Prometheus and Grafana](#monitoring-prometheus-and-grafana)
   - [Installing Prometheus Operator](#installing-prometheus-operator)
-  - [Install Grafana](#install-grafana)
 - [Install Metric Server](#install-metric-server)
   
 </details>
@@ -700,21 +699,7 @@ Create the RBAC, Prometheus and Alert Manager
 ```sh
 kubectl apply -f monitoring/prometheus-operator/prometheus-rbac.yaml
 kubectl apply -f monitoring/prometheus-operator/prometheus-prometheus.yaml
-kubectl apply -f monitoring/prometheus-operator/prometheus-alertmanager.yaml
-```
-
-
-## Install Grafana
-```sh
-# Install Grafana
-helm install grafana grafana/grafana --version 10.5.5 \
---create-namespace --namespace monitoring \
--f monitoring/grafana/values.yaml
-
-# Upgrade chart
-helm upgrade grafana grafana/grafana \
---namespace monitoring \
--f monitoring/grafana/values.yaml
+kubectl apply -f monitoring/prometheus-operator/alertmanager-alertmanager.yaml
 ```
 
 # Install Metric Server

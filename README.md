@@ -696,6 +696,13 @@ But it may be necessary to run the command multiple times for all components to 
 
 > [!note] Note: If you used Kube-Prometheus as the installation method, we would recommend you to follow this page to learn how to access the resources provided.
 
+Create the RBAC, Prometheus and Alert Manager
+```sh
+kubectl apply -f monitoring/prometheus-operator/prometheus-rbac.yaml
+kubectl apply -f monitoring/prometheus-operator/prometheus-prometheus.yaml
+kubectl apply -f monitoring/prometheus-operator/prometheus-alertmanager.yaml
+```
+
 
 ## Install Grafana
 ```sh

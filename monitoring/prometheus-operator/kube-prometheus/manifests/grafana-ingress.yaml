@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/component: grafana
     app.kubernetes.io/part-of: kube-prometheus
 spec:
+  ingressClassName: traefik
   rules:
   - host: grafana.local
     http:

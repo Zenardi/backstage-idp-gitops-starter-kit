@@ -215,11 +215,13 @@ log_with_timestamp "------------------------"
 
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-helm install traefik traefik/traefik \
-  --create-namespace --namespace traefik \
+helm upgrade traefik traefik/traefik \
+  --create-namespace --namespace traefik --install \
   -f traefik/values.yaml \
   --set metrics.prometheus.serviceMonitor.enabled=false \
-  --set metrics.prometheus.prometheusRule.enabled=false
+  --set metrics.prometheus.prometheusRule.enabled=false \
+  --set ingressRoute.dashboard.enabled=true \
+  --set 'ingressRoute.dashboard.entryPoints[0]=web'
 
 log_with_timestamp "------------------------"
 log_with_timestamp "[INFO] Finish Traefik Setup..."
@@ -234,10 +236,16 @@ log_with_timestamp "------------------------"
 
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
-helm upgrade argocd argo/argo-cd --version 9.2.3 --install --create-namespace -n argocd -f argocd/values.yaml
+helm upgrade argocd argo/argo-cd --version 9.2.3 --install --create-namespace -n argocd \
+  -f argocd/values-devcontainer.yaml \
+  --set "server.ingress.hosts[0]=${CODESPACE_NAME}-80.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}" \
+  --set "global.domain=${CODESPACE_NAME}-80.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
 
 log_with_timestamp "------------------------"
 log_with_timestamp "[INFO] Finish Argo CD Setup..."
+log_with_timestamp "[INFO] ArgoCD available via Traefik at: http://<codespace-url>:8888/argocd"
+log_with_timestamp "[INFO] Or via port-forward: kubectl port-forward svc/argocd-server -n argocd 8081:80"
+log_with_timestamp "[INFO] Default admin password: kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath='{.data.password}' | base64 -d"
 log_with_timestamp "------------------------"
 
 ###################################

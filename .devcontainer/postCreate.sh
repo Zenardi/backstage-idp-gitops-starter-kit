@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 export DOCKER_API_VERSION=1.43
+
+# Timestamp function for logging
+log_with_timestamp() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+}
+
 # Base tools for Oh My Zsh and kind
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends zsh git curl wget ca-certificates
@@ -12,7 +18,7 @@ fi
 
 # Powerlevel10k theme for Oh My Zsh
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-  echo "Installing Powerlevel10k theme..."
+  log_with_timestamp "Installing Powerlevel10k theme..."
   git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
   
   # Set theme in .zshrc
@@ -140,8 +146,8 @@ P10K_EOF
     echo '[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh' >> "$HOME/.zshrc"
   fi
   
-  echo "Powerlevel10k installed! Note: For best experience, install 'MesloLGS NF' font on your local machine."
-  echo "Download from: https://github.com/romkatv/powerlevel10k#manual-font-installation"
+  log_with_timestamp "Powerlevel10k installed! Note: For best experience, install 'MesloLGS NF' font on your local machine."
+  log_with_timestamp "Download from: https://github.com/romkatv/powerlevel10k#manual-font-installation"
 fi
 
 # kind (latest release)
@@ -162,6 +168,11 @@ fi
 # helm (latest stable)
 if ! command -v helm >/dev/null 2>&1; then
   curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
+
+# Ensure helm is executable (fix permissions if needed)
+if [ -f /usr/local/bin/helm ]; then
+  sudo chmod +x /usr/local/bin/helm
 fi
 
 # Add kubectl alias to zsh config
@@ -187,47 +198,49 @@ fi
 ##########################
 #### Traefik Setup #######
 ##########################
-echo "------------------------"
-echo "[INFO] Setting up Traefik Ingress Controller..."
-echo "------------------------"
+log_with_timestamp "------------------------"
+log_with_timestamp "[INFO] Setting up Traefik Ingress Controller..."
+log_with_timestamp "------------------------"
 
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
 helm install traefik traefik/traefik \
   --create-namespace --namespace traefik \
-  -f traefik/values.yaml
+  -f traefik/values.yaml \
+  --set metrics.prometheus.serviceMonitor.enabled=false \
+  --set metrics.prometheus.prometheusRule.enabled=false
 
-echo "------------------------"
-echo "[INFO] Finish Traefik Setup..."
-echo "------------------------"
+log_with_timestamp "------------------------"
+log_with_timestamp "[INFO] Finish Traefik Setup..."
+log_with_timestamp "------------------------"
 
 ##########################
 #### ARGOCD Setup ########
 ##########################
-echo "------------------------"
-echo "[INFO] Setting up Argo CD..."
-echo "------------------------"
+log_with_timestamp "------------------------"
+log_with_timestamp "[INFO] Setting up Argo CD..."
+log_with_timestamp "------------------------"
 
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 helm upgrade argocd argo/argo-cd --version 9.2.3 --install --create-namespace -n argocd -f argocd/values.yaml
 
-echo "------------------------"
-echo "[INFO] Finish Argo CD Setup..."
-echo "------------------------"
+log_with_timestamp "------------------------"
+log_with_timestamp "[INFO] Finish Argo CD Setup..."
+log_with_timestamp "------------------------"
 
 ###################################
 ### Metric Server SETUP ###########
 ###################################
-echo "------------------------"
-echo "[INFO] Setting up Metric Server..."
-echo "------------------------"
+log_with_timestamp "------------------------"
+log_with_timestamp "[INFO] Setting up Metric Server..."
+log_with_timestamp "------------------------"
 
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm install metrics-server metrics-server/metrics-server --version 3.13.0 \
 -f metrics-server/values.yaml \
 -n kube-system
 
-echo "------------------------"
-echo "[INFO] Finishing Metric Server setup..."
-echo "------------------------"
+log_with_timestamp "------------------------"
+log_with_timestamp "[INFO] Finishing Metric Server setup..."
+log_with_timestamp "------------------------"

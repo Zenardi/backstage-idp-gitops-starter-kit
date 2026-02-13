@@ -263,3 +263,11 @@ helm install metrics-server metrics-server/metrics-server --version 3.13.0 \
 log_with_timestamp "------------------------"
 log_with_timestamp "[INFO] Finishing Metric Server setup..."
 log_with_timestamp "------------------------"
+
+log_with_timestamp "[INFO] Establishing port-forwards..."
+nohup kubectl port-forward -n traefik svc/traefik 8888:80 >/dev/null 2>&1 &
+nohup kubectl port-forward -n argocd svc/argocd-server 8080:80 >/dev/null 2>&1 &
+log_with_timestamp "[INFO] Port forwards running: Traefik (8888), ArgoCD (8080)"
+
+
+

@@ -22,17 +22,18 @@ export AWS_SECRET_ACCESS_KEY=""
 ##########################
 #### Traefik Setup #######
 ##########################
-echo "------------------------"
-echo "[INFO] Setting up Traefik Ingress Controller..."
-echo "------------------------"
+# kube.tf already setup traefik as ingress controller
+# echo "------------------------"
+# echo "[INFO] Setting up Traefik Ingress Controller..."
+# echo "------------------------"
 
-helm install traefik traefik/traefik \
-  --create-namespace --namespace traefik \
-  -f ../traefik/values.yaml
+# helm install traefik traefik/traefik \
+#   --create-namespace --namespace traefik \
+#   -f ../traefik/values.yaml
 
-echo "------------------------"
-echo "[INFO] Finish Traefik Setup..."
-echo "------------------------"
+# echo "------------------------"
+# echo "[INFO] Finish Traefik Setup..."
+# echo "------------------------"
 
 
 ##########################

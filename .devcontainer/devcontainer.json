@@ -1,0 +1,43 @@
+{
+  "name": "DescomplicandoKubernetes",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+  "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+    "version": "24.0.9"
+  }
+  },
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+    "extensions": [
+      "ms-kubernetes-tools.vscode-kubernetes-tools",
+      "ms-azuretools.vscode-docker",
+      "redhat.vscode-yaml",
+      "yzhang.markdown-all-in-one",
+      "ms-kubernetes-tools.kind-vscode",
+      "tim-koehler.helm-intellisense",
+      "ms-azuretools.vscode-docker",
+      "bierner.github-markdown-preview",
+      "hashicorp.terraform",
+      "upboundio.upbound",
+      "dracula-theme.theme-dracula",
+      "github.github-vscode-theme",
+      "zhuangtongfa.Material-theme",
+      "PKief.material-icon-theme",
+      "vscode-icons-team.vscode-icons"
+    ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.fontFamily": "MesloLGS NF",
+        "workbench.colorTheme": "Dracula Theme",
+        "workbench.iconTheme": "material-icon-theme",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/usr/bin/zsh"
+          }
+        }
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/postCreate.sh"
+}

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-devops-agent
+  namespace: azure-devops-agents
+  labels:
+    app: azure-devops-agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: azure-devops-agent
+  template:
+    metadata:
+      labels:
+        app: azure-devops-agent
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: agent
+          image: azure-devops-agent:latest
+          imagePullPolicy: Never
+          env:
+            - name: AZP_URL
+              valueFrom:
+                secretKeyRef:
+                  name: azure-devops-agent-secret
+                  key: AZP_URL
+            - name: AZP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: azure-devops-agent-secret
+                  key: AZP_TOKEN
+            - name: AZP_POOL
+              valueFrom:
+                secretKeyRef:
+                  name: azure-devops-agent-secret
+                  key: AZP_POOL
+            - name: AZP_AGENT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AZP_WORK
+              value: /workspace
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          lifecycle:
+            preStop:
+              exec:
+                # Gracefully deregister the agent before the pod is killed
+                command: ["/bin/bash", "-c", "while true; do if [ -f /workspace/.agent ]; then break; fi; sleep 1; done; /azp/config.sh remove --unattended --auth pat --token $AZP_TOKEN"]
+      volumes:
+        - name: workspace
+          emptyDir: {}

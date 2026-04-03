@@ -1,0 +1,76 @@
+# One-time setup: grant the Azure DevOps agent service account the permissions
+# it needs to manage ArgoCD resources and deploy apps to the KIND cluster.
+#
+# Apply once after the KIND cluster and azure-devops-agents namespace exist:
+#   kubectl apply -f docs/kind-cluster-rbac.yaml
+#
+# The agent pod runs as:  system:serviceaccount:azure-devops-agents:default
+
+---
+# Allow the agent to manage ArgoCD AppProjects and Applications (namespace-scoped in argocd)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: azure-devops-agent-argocd
+  namespace: argocd
+rules:
+  - apiGroups: ["argoproj.io"]
+    resources: ["appprojects", "applications", "applicationsets"]
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: azure-devops-agent-argocd
+  namespace: argocd
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: azure-devops-agents
+roleRef:
+  kind: Role
+  name: azure-devops-agent-argocd
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Allow the agent to create/read namespaces (cluster-scoped) and manage
+# all standard workload resources across all namespaces (for kubectl apply -f k8s/)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: azure-devops-agent-deployer
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "create", "patch"]
+  - apiGroups: ["", "apps", "networking.k8s.io", "autoscaling", "policy"]
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+      - services
+      - endpoints
+      - pods
+      - configmaps
+      - secrets
+      - serviceaccounts
+      - ingresses
+      - horizontalpodautoscalers
+      - poddisruptionbudgets
+    verbs: ["get", "list", "create", "update", "patch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: azure-devops-agent-deployer
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: azure-devops-agents
+roleRef:
+  kind: ClusterRole
+  name: azure-devops-agent-deployer
+  apiGroup: rbac.authorization.k8s.io

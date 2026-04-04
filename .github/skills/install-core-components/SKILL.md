@@ -1,8 +1,8 @@
 ---
 name: install-core-components
 description: >
-  Guide for installing the core platform components — Traefik, ArgoCD, Metrics Server, and
-  Prometheus Operator (kube-prometheus) — into the local KIND cluster for the
+  Guide for installing the core platform components — Traefik, ArgoCD, Metrics Server,
+  Prometheus Operator (kube-prometheus), and Crossplane — into the local KIND cluster for the
   backstage-idp-gitops-starter-kit. Use this skill when asked to install, upgrade, or
   troubleshoot any of these components after the KIND cluster is up. Depends on the
   kind-cluster-setup skill.
@@ -63,6 +63,7 @@ Always install in this order to satisfy dependencies:
 3. **ArgoCD** — uses Traefik ingress; `argocd/values.yaml` creates ServiceMonitors in `monitoring`
 4. **Metrics Server** — independent, but needed for HPA
 5. **Prometheus Operator** — full stack after CRDs + namespace are already present
+6. **Crossplane** — install after ArgoCD so the ArgoCD resource-tracking patch can be applied immediately after
 
 ---
 
@@ -205,6 +206,50 @@ kubectl get pods -n monitoring
 
 ---
 
+## 6. Crossplane
+
+Install Crossplane after ArgoCD so that the ArgoCD resource-tracking patch (required to avoid
+label conflicts with Crossplane-managed resources) can be applied immediately after.
+
+```bash
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+helm repo update
+
+helm install crossplane \
+  --namespace crossplane-system \
+  --create-namespace \
+  crossplane-stable/crossplane
+```
+
+Wait for Crossplane to be ready:
+```bash
+kubectl wait --for=condition=Available deployment/crossplane \
+  -n crossplane-system --timeout=120s
+kubectl get pods -n crossplane-system
+```
+
+### Patch ArgoCD for Crossplane resource tracking
+
+Crossplane adds its own labels to managed resources. Without this patch, ArgoCD misidentifies
+those resources as belonging to an Application and shows spurious sync errors.
+
+```bash
+kubectl patch configmap argocd-cm -n argocd --type merge \
+  -p '{"data":{"application.resourceTrackingMethod":"annotation"}}'
+```
+
+Restart the ArgoCD application controller to pick up the change:
+```bash
+kubectl rollout restart deployment/argocd-application-controller -n argocd
+```
+
+Verify the patch is active:
+```bash
+kubectl get configmap argocd-cm -n argocd -o jsonpath='{.data.application\.resourceTrackingMethod}'
+```
+
+---
+
 ## Upgrading Components
 
 ```bash
@@ -282,14 +327,6 @@ Always use `--skip-schema-validation` — see step 2 above.
 If `kubectl create -f manifests/` fails with "no kind" errors, wait and retry:
 ```bash
 kubectl create -f monitoring/prometheus-operator/kube-prometheus/manifests/
-```
-
-### ArgoCD + Crossplane resource tracking
-
-If using Crossplane, patch `argocd-cm` after ArgoCD is installed:
-```bash
-kubectl patch configmap argocd-cm -n argocd --type merge \
-  -p '{"data":{"application.resourceTrackingMethod":"annotation"}}'
 ```
 
 ### ArgoCD pods not starting (general)

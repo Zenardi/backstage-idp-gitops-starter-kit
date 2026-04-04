@@ -133,6 +133,20 @@ Grant the Azure DevOps agent service account the permissions as it needs to mana
 kubectl apply -f azure-devops-agents/kind-cluster-rbac.yaml
 ```
 
+Create a repository credentials secret for ArgoCD to allow it to pull from your Azure DevOps Git repos. This is required if your Backstage pipeline templates deploy ArgoCD applications that reference private Azure DevOps repos. User must specify ADO_ORG_NAME and ARGOCD_ADO_PAT environment variables before running the command below.
+
+```bash
+ kubectl create secret generic ado-org-repo-creds \
+   -n argocd \
+   --from-literal=type=git \
+   --from-literal=url=https://dev.azure.com/$ADO_ORG_NAME/ \
+   --from-literal=username=argocd \
+   --from-literal=password=$ARGOCD_ADO_PAT
+ 
+ kubectl label secret ado-org-repo-creds -n argocd \
+   argocd.argoproj.io/secret-type=repo-creds
+```
+
 Watch the pods come up:
 ```bash
 kubectl rollout status deployment/azure-devops-agent -n azure-devops-agents
@@ -144,7 +158,7 @@ as the agent name.
 
 ---
 
-## Step 4 — Verify Agents in Azure DevOps
+## Step 5 — Verify Agents in Azure DevOps
 
 1. Go to `https://dev.azure.com/<Azure DevOps Organization>/_settings/agentpools`
 2. Click the `<Agent Pool Name>` pool
@@ -159,7 +173,7 @@ az pipelines agent list \
 
 ---
 
-## Step 5 — Configure Backstage Pipeline Templates
+## Step 6 — Configure Backstage Pipeline Templates
 
 In your Backstage scaffolder templates, reference the pool by name in your pipeline YAML:
 

@@ -2,7 +2,7 @@
 # it needs to manage ArgoCD resources and deploy apps to the KIND cluster.
 #
 # Apply once after the KIND cluster and azure-devops-agents namespace exist:
-#   kubectl apply -f docs/kind-cluster-rbac.yaml
+#   kubectl apply -f azure-devops-agents/kind-cluster-rbac.yaml
 #
 # The agent pod runs as:  system:serviceaccount:azure-devops-agents:default
 

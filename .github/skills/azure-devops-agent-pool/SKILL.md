@@ -127,6 +127,12 @@ kubectl apply -f azure-devops-agents/namespace.yaml
 kubectl apply -f azure-devops-agents/deployment.yaml
 ```
 
+Grant the Azure DevOps agent service account the permissions as it needs to manage ArgoCD resources and deploy apps to the KIND cluster.
+
+```bash
+kubectl apply -f azure-devops-agents/kind-cluster-rbac.yaml
+```
+
 Watch the pods come up:
 ```bash
 kubectl rollout status deployment/azure-devops-agent -n azure-devops-agents

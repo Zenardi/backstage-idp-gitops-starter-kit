@@ -201,6 +201,17 @@ fi
 
 # Create a default kind cluster if Docker is available and no cluster exists
 if command -v docker >/dev/null 2>&1; then
+  # Raise inotify limits on the host kernel — shared with KIND containers.
+  # Required for Crossplane + provider pods (otherwise they crash with "too many open files").
+  log_with_timestamp "Setting inotify kernel limits for KIND + Crossplane..."
+  sudo sysctl -w fs.inotify.max_user_instances=1280   || true
+  sudo sysctl -w fs.inotify.max_user_watches=655360   || true
+  # Persist across reboots
+  if ! grep -q "max_user_instances=1280" /etc/sysctl.d/99-kind.conf 2>/dev/null; then
+    echo "fs.inotify.max_user_instances=1280" | sudo tee -a /etc/sysctl.d/99-kind.conf
+    echo "fs.inotify.max_user_watches=655360" | sudo tee -a /etc/sysctl.d/99-kind.conf
+  fi
+
   if ! kind get clusters >/dev/null 2>&1 || ! kind get clusters | grep -q '^kind$'; then
     kind create cluster --config kind/kind-config.yaml
   fi

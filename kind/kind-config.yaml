@@ -15,7 +15,23 @@ nodes:
   - containerPort: 30443
     hostPort: 8443
     protocol: TCP
-- role: worker   
+- role: worker
 
-# kind create cluster --config kind.yaml
+# ──────────────────────────────────────────────────────────────────────────────
+# inotify limits — required for Crossplane + provider pods.
+# KIND containers share the host kernel so these values must be set on the HOST
+# before creating the cluster:
+#
+#   sudo sysctl -w fs.inotify.max_user_instances=1280
+#   sudo sysctl -w fs.inotify.max_user_watches=655360
+#
+# To make permanent:
+#   echo 'fs.inotify.max_user_instances=1280'  | sudo tee -a /etc/sysctl.d/99-kind.conf
+#   echo 'fs.inotify.max_user_watches=655360'  | sudo tee -a /etc/sysctl.d/99-kind.conf
+#
+# Symptom when missing: crossplane / provider pods crash with
+#   "cannot start controller manager: too many open files"
+# ──────────────────────────────────────────────────────────────────────────────
+
+# kind create cluster --config kind/kind-config.yaml
 # kind delete cluster --name backstage
